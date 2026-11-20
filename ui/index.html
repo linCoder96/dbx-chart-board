@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chart Board</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f5f6f8;
+        --surface: #ffffff;
+        --border: #e3e5e8;
+        --fg: #1f2328;
+        --muted: #6b7280;
+        --accent: #6d5dfc;
+        --danger: #d1242f;
+        --warn: #9a6700;
+        font-family: Inter, "Microsoft YaHei", ui-sans-serif, system-ui, sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #16181d;
+          --surface: #1e2128;
+          --border: #33373f;
+          --fg: #e6e6e6;
+          --muted: #9aa0a6;
+        }
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; background: var(--bg); color: var(--fg); }
+      .topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface); }
+      .brand { display: flex; align-items: center; gap: 8px; min-width: 0; }
+      .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex: none; }
+      .brand h1 { margin: 0; font-size: 15px; font-weight: 700; white-space: nowrap; }
+      .board-controls { display: flex; align-items: center; gap: 8px; min-width: 0; }
+      select, input, textarea { font: inherit; color: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; }
+      select { max-width: 220px; }
+      textarea { resize: vertical; min-height: 96px; font-family: Consolas, "Courier New", monospace; font-size: 12.5px; }
+      button { font: inherit; font-weight: 600; border-radius: 8px; padding: 7px 12px; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--fg); white-space: nowrap; }
+      button:disabled { opacity: 0.55; cursor: wait; }
+      button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      button.ghost:hover { border-color: var(--accent); color: var(--accent); }
+      button.danger:hover { border-color: var(--danger); color: var(--danger); }
+      .banner { margin: 12px 16px 0; padding: 10px 12px; border: 1px solid var(--border); border-left: 3px solid var(--warn); border-radius: 8px; background: var(--surface); color: var(--muted); font-size: 13px; }
+      .cards { flex: 1; display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 14px; padding: 14px 16px; align-content: start; }
+      .card { display: flex; flex-direction: column; min-height: 300px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); overflow: hidden; }
+      .card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px 0; }
+      .card-head h2 { margin: 0; font-size: 13.5px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .card-actions { display: flex; gap: 4px; flex: none; }
+      .card-actions button { border: 0; background: transparent; padding: 4px 6px; font-size: 12px; color: var(--muted); }
+      .card-actions button:hover { color: var(--accent); }
+      .card-actions button.danger:hover { color: var(--danger); }
+      .chart { flex: 1; min-height: 220px; }
+      .card-body-msg { flex: 1; display: grid; place-items: center; padding: 12px; color: var(--muted); font-size: 13px; text-align: center; line-height: 1.7; }
+      .card-meta { display: flex; align-items: center; gap: 8px; padding: 8px 12px 10px; border-top: 1px dashed var(--border); min-width: 0; }
+      .badge { flex: none; font-size: 11px; color: var(--muted); border: 1px solid var(--border); border-radius: 99px; padding: 1px 8px; }
+      .badge.warn { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); }
+      .card-meta code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 11.5px; }
+      .empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--muted); font-size: 13.5px; text-align: center; line-height: 1.8; padding: 24px; }
+      .footer { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-top: 1px solid var(--border); background: var(--surface); }
+      .status { margin-left: auto; color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      dialog { width: min(720px, calc(100vw - 40px)); border: 1px solid var(--border); border-radius: 14px; background: var(--surface); color: var(--fg); padding: 0; }
+      dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
+      .dlg-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; max-height: 78vh; overflow: auto; }
+      .dlg-body h3 { margin: 0; font-size: 15px; }
+      .field { display: flex; flex-direction: column; gap: 5px; }
+      .field > label { font-size: 12px; color: var(--muted); }
+      .field-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+      .metrics-group { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 12.5px; }
+      .metrics-group label { display: inline-flex; gap: 5px; align-items: center; }
+      .preview-wrap { display: none; }
+      .preview-wrap.show { display: block; }
+      #preview-chart { width: 100%; height: 260px; border: 1px dashed var(--border); border-radius: 10px; }
+      .hint { font-size: 12px; color: var(--muted); line-height: 1.6; }
+      .dlg-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 2px; }
+      .hidden { display: none !important; }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="dot"></span>
+        <h1 id="app-title">图表看板</h1>
+      </div>
+      <div class="board-controls">
+        <select id="board-select" aria-label="面板"></select>
+        <button id="new-board" class="ghost" type="button">+ 新建面板</button>
+        <button id="delete-board" class="ghost danger" type="button">删除面板</button>
+      </div>
+    </header>
+
+    <div id="banner" class="banner hidden"></div>
+
+    <main id="cards" class="cards"></main>
+    <div id="empty" class="empty hidden">
+      <div id="empty-title"></div>
+      <div id="empty-hint"></div>
+    </div>
+
+    <footer class="footer">
+      <button id="add-card" class="primary" type="button">+ 添加卡片</button>
+      <button id="add-demo" class="ghost" type="button">添加示例卡片</button>
+      <span id="status" class="status"></span>
+    </footer>
+
+    <dialog id="card-dialog">
+      <div class="dlg-body">
+        <h3 id="dlg-title"></h3>
+        <div class="field">
+          <label for="f-title">标题</label>
+          <input id="f-title" type="text" maxlength="120" placeholder="例如：各渠道订单趋势" />
+        </div>
+        <div class="field">
+          <label for="f-sql">SQL（只读 SELECT）</label>
+          <textarea id="f-sql" spellcheck="false" placeholder="SELECT date, channel, count(*) AS orders FROM orders GROUP BY 1, 2 ORDER BY 1"></textarea>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="f-database">数据库（可选，默认当前连接库）</label>
+            <input id="f-database" type="text" placeholder="" />
+          </div>
+          <div class="field">
+            <label>&nbsp;</label>
+            <button id="btn-query" class="primary" type="button">查询并智能生成</button>
+          </div>
+        </div>
+        <div id="spec-section" class="hidden">
+          <div class="field-row">
+            <div class="field">
+              <label for="f-type">图表类型</label>
+              <select id="f-type">
+                <option value="bar">柱状图</option>
+                <option value="line">折线图</option>
+                <option value="area">面积图</option>
+                <option value="pie">饼图</option>
+                <option value="scatter">散点图</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="f-dim">维度（X 轴）</label>
+              <select id="f-dim"><option value="">（无）</option></select>
+            </div>
+            <div class="field">
+              <label for="f-breakdown">系列拆分（可选）</label>
+              <select id="f-breakdown"><option value="">（无）</option></select>
+            </div>
+            <div class="field">
+              <label for="f-stack">堆叠</label>
+              <select id="f-stack">
+                <option value="none">不堆叠</option>
+                <option value="stacked">堆叠</option>
+                <option value="normalized">百分比堆叠</option>
+              </select>
+            </div>
+          </div>
+          <div class="field">
+            <label>指标（Y 轴，可多选）</label>
+            <div id="f-metrics" class="metrics-group"></div>
+          </div>
+          <div class="preview-wrap" id="preview-wrap">
+            <div id="preview-chart"></div>
+          </div>
+          <div class="hint" id="dlg-hint"></div>
+        </div>
+        <div class="dlg-actions">
+          <button id="dlg-cancel" class="ghost" type="button">取消</button>
+          <button id="dlg-save" class="primary" type="button">保存卡片</button>
+        </div>
+      </div>
+    </dialog>
+
+    <script src="vendor/echarts.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
