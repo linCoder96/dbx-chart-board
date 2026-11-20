@@ -101,6 +101,8 @@
   }
 
   // ---------- 存储 ----------
+
+let lastPersistedSnapshot = "";
   async function loadState() {
     if (!plugin.capabilities || !plugin.capabilities.storage) {
       setStatus("当前宿主不提供 host.storage，面板仅在本页会话内保留");
@@ -108,6 +110,7 @@
     }
     try {
       const raw = await plugin.storage.get(STORE_KEY);
+      lastPersistedSnapshot = JSON.stringify(raw);
       if (raw && typeof raw === "object") {
         boards = Array.isArray(raw.boards) ? raw.boards : [];
         activeBoardId = typeof raw.activeBoardId === "string" ? raw.activeBoardId : "";
@@ -119,11 +122,33 @@
 
   async function saveState() {
     if (!plugin.capabilities || !plugin.capabilities.storage) return;
+    const payload = { boards, activeBoardId };
     try {
-      await plugin.storage.set(STORE_KEY, { boards, activeBoardId });
+      await plugin.storage.set(STORE_KEY, payload);
+      lastPersistedSnapshot = JSON.stringify(payload);
     } catch (error) {
       setStatus("保存面板失败：" + error.message);
     }
+  }
+
+  /** 轮询共享状态：Sidecar/MCP 写入卡片后（约 2 秒）自动刷新工作台 */
+  function startPolling() {
+    if (!plugin.capabilities || !plugin.capabilities.storage) return;
+    setInterval(async () => {
+      if (els.dialog && els.dialog.open) return; // 编辑中不要覆盖用户正在填写的内容
+      try {
+        const raw = await plugin.storage.get(STORE_KEY);
+        const snapshot = JSON.stringify(raw);
+        if (!raw || snapshot === lastPersistedSnapshot) return;
+        lastPersistedSnapshot = snapshot;
+        boards = Array.isArray(raw.boards) ? raw.boards : [];
+        activeBoardId = (typeof raw.activeBoardId === "string" && raw.activeBoardId) || (boards[0] && boards[0].id) || "";
+        renderAll();
+        setStatus("已从 Agent/MCP 同步看板变更");
+      } catch (error) {
+        // 轮询失败保持现有视图，不影响手动操作
+      }
+    }, 2000);
   }
 
   // ---------- 列分类与智能推断 ----------
@@ -411,10 +436,11 @@
   // ---------- 卡片数据获取 ----------
   async function fetchCardData(card) {
     if (card.demo) return DEMO_RESULT;
-    if (!connectionId) throw new Error("缺少连接：请从连接树右键 →「打开图表看板」");
+    const cardConnectionId = card.connectionId || connectionId;
+    if (!cardConnectionId) throw new Error("卡片缺少连接：请从连接树右键 →「打开图表看板」");
     if (!plugin.capabilities || !plugin.capabilities.dataApi) throw new Error("当前宿主不支持 host.data:read");
     return plugin.queryData({
-      connectionId,
+      connectionId: cardConnectionId,
       database: card.database || defaultDatabase || undefined,
       sql: card.sql,
       maxRows: MAX_ROWS,
@@ -741,7 +767,7 @@
       return;
     }
     const title = els.fTitle.value.trim() || "未命名卡片";
-    const patch = { title, sql, database: els.fDatabase.value.trim(), spec };
+    const patch = { title, sql, database: els.fDatabase.value.trim(), connectionId, spec };
     if (dialogState.editingId) {
       const card = board.cards.find((item) => item.id === dialogState.editingId);
       if (card) Object.assign(card, patch);
@@ -847,6 +873,7 @@
     }
     bindEvents();
     renderAll();
+    startPolling();
     if (typeof plugin.onContext === "function") {
       plugin.onContext((nextContext) => {
         const nextConnection = nextContext && nextContext.connectionId ? nextContext.connectionId : "";
