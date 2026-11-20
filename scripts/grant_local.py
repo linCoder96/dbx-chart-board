@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 
 DB = r"C:\Users\dnl\AppData\Roaming\com.dbx.app\dbx.db"
 PLUGIN_ID = "com.dnl.dbx-chart-board"
-CONNECTION_ID = "e550974a-c9a6-48e3-9dc7-8c0ff4ad2a04"  # MySQL_192.168.0.207（dev&test）
+CONNECTION_ID = "13f9603c-b029-4ce5-9fd1-cc535159cc78"  # MySQL_192.168.0.207（dev&test）
 
 
 def main() -> None:
