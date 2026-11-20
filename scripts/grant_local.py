@@ -1,4 +1,4 @@
-"""本地开发调试用：在 DBX app_settings 中为 Chart Board 写入 MCP 工具授权和数据访问授权。
+"""本地开发调试用：在 DBX app_settings 中为 ChatBoard 写入 MCP 工具授权和数据访问授权。
 
 等价于在插件中心/MCP 设置里手工点开开关，仅用于自动化验证。
 """

@@ -1,4 +1,4 @@
-/* Chart Board Sidecar —— DBX 插件后端（stdio-jsonl / JSON-RPC 2.0）
+/* ChatBoard Sidecar —— DBX 插件后端（stdio-jsonl / JSON-RPC 2.0）
  * 对外暴露 MCP 工具，让外部 Agent（Claude Code 等）通过 dbx-mcp 一句话添加看板卡片。
  * 卡片写入 <DBX_PLUGIN_DATA_DIR>/ui-storage.json，与前端 host.storage 共享同一份状态。
  */
@@ -150,14 +150,14 @@ function toolResult(text, isError = false) {
 const TOOLS = [
   {
     name: "list_boards",
-    description: "列出图表看板中已有的面板和卡片；用于确认当前看板状态。",
+    description: "列出对话图表看板中已有的面板和卡片；用于确认当前看板状态。",
     inputSchema: { type: "object", properties: {} },
     annotations: { readOnlyHint: true },
   },
   {
     name: "add_card",
     description:
-      "向 DBX 图表看板添加一张数据卡片。先通过 dbx_execute_query 查询数据，再按数据形状给出 spec：日期维度→line，文本维度→bar，两个数值列→scatter，占比→pie。卡片刷新时使用工作台当前连接。",
+      "向 DBX 对话图表看板添加一张数据卡片。先通过 dbx_execute_query 查询数据，再按数据形状给出 spec：日期维度→line，文本维度→bar，两个数值列→scatter，占比→pie。卡片刷新时使用工作台当前连接。",
     inputSchema: {
       type: "object",
       properties: {
@@ -184,7 +184,7 @@ const TOOLS = [
   },
   {
     name: "remove_card",
-    description: "从图表看板删除一张卡片（按 cardId）。",
+    description: "从对话图表看板删除一张卡片（按 cardId）。",
     inputSchema: {
       type: "object",
       properties: { cardId: { type: "string", description: "要删除的卡片 ID，可用 list_boards 获取" } },
@@ -238,7 +238,7 @@ function callTool(tool, args = {}) {
           boardName: board.name,
           cardId: card.id,
           title: card.title,
-          message: "卡片已写入图表看板；打开 DBX 工作台将自动刷新（约 2 秒）。",
+          message: "卡片已写入对话图表看板；打开 DBX 工作台将自动刷新（约 2 秒）。",
         },
         null,
         2

@@ -49,7 +49,7 @@ child.stdout.on("data", (chunk) => {
       const tools = (message.result?.tools || []).map((t) => t.name);
       const pluginTools = tools.filter((name) => name.includes("chart_board"));
       console.log("工具总数:", tools.length);
-      console.log("图表看板工具:", JSON.stringify(pluginTools));
+      console.log("对话图表看板工具:", JSON.stringify(pluginTools));
       const mode = process.argv[2];
       if (mode === "call" && process.argv[3]) {
         const args = JSON.parse(process.argv[4] || "{}");

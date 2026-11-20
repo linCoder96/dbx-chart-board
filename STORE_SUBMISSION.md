@@ -8,10 +8,10 @@
 | 项 | 值 |
 |---|---|
 | 插件 ID | `com.dnl.dbx-chart-board` |
-| 名称 | Chart Board / 图表看板 |
-| 版本 | `0.2.0`（git tag `v0.2.0`） |
+| 名称 | ChatBoard / 对话图表看板 |
+| 版本 | `0.1.0`（git tag `v0.1.0`） |
 | 许可证 | Apache-2.0 |
-| 候选包 | `dist/com.dnl.dbx-chart-board-0.2.0-windows-x64.dbxp`（未签名） |
+| 候选包 | `dist/com.dnl.dbx-chart-board-0.1.0-windows-x64.dbxp`（未签名） |
 | 候选清单 | `release-candidates.json`（含真实 sha256/size） |
 | 发布说明 | `RELEASE_NOTES.md` |
 | 权限 | `host.data:read`, `host.storage` |
@@ -20,8 +20,8 @@
 ## 提交到 dbx-store 所需（需公开源码仓库与 GitHub 账号）
 
 1. 将本仓库推送到公开 Git 仓库（GitHub / CNB），设 `source`/`homepage` 到该地址。
-2. 创建 GitHub Release `v0.2.0`，上传：
-   - `com.dnl.dbx-chart-board-0.2.0-windows-x64.dbxp`
+2. 创建 GitHub Release `v0.1.0`，上传：
+   - `com.dnl.dbx-chart-board-0.1.0-windows-x64.dbxp`
    - `release-candidates.json`
    - `RELEASE_NOTES.md` 内容作为 Release Notes
 3. 向 `t8y2/dbx-store` 提 PR，按 `CONTRIBUTING.md` 提供：

@@ -2,9 +2,9 @@
   "candidates": [
     {
       "target": "windows-x64",
-      "file": "com.dnl.dbx-chart-board-0.2.0-windows-x64.dbxp",
-      "sha256": "42a37386b84a843e3c2336d2f0a1ee0801f6ce414fe919ed21a97a81815b9486",
-      "size": 54817344
+      "file": "com.dnl.dbx-chart-board-0.1.0-windows-x64.dbxp",
+      "sha256": "05eb85ae0733696c4c1d11639df214e1e1dfa98d5876b257c19049824d0b7174",
+      "size": 54818092
     }
   ]
 }

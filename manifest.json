@@ -2,10 +2,10 @@
   "$schema": "https://raw.githubusercontent.com/t8y2/dbx/main/plugins/manifest.schema.json",
   "manifest_version": 1,
   "id": "com.dnl.dbx-chart-board",
-  "name": "Chart Board",
-  "version": "0.2.0",
+  "name": "ChatBoard",
+  "version": "0.1.0",
   "publisher": "dnl",
-  "description": "AI-friendly dashboard board with MCP tools: let agents add chart cards via conversation.",
+  "description": "AI-friendly dashboard: turn query results into charts by talking to an agent via MCP tools.",
   "icon": "assets/plugin.svg",
   "permissions": ["host.data:read", "host.storage"],
   "engines": {
@@ -25,14 +25,14 @@
     {
       "type": "workbench",
       "id": "com.dnl.dbx-chart-board.workbench",
-      "label": "Chart Board",
-      "description": "Dashboard board for query results.",
+      "label": "ChatBoard",
+      "description": "Talk to create a persistent chart board from query results.",
       "icon": "assets/plugin.svg"
     },
     {
       "type": "context-menu",
       "id": "com.dnl.dbx-chart-board.open",
-      "label": "Open Chart Board",
+      "label": "Open ChatBoard",
       "menu": "connection",
       "action": {
         "type": "open-workbench",
@@ -45,7 +45,7 @@
       "description": "Agent tools for adding and managing chart-board cards from a conversation.",
       "external_tools": true,
       "toolsets": [
-        { "id": "chart-board", "title": "图表看板" }
+        { "id": "chart-board", "title": "对话图表看板" }
       ],
       "tools": {
         "list_boards": { "access": "read", "toolset": "chart-board" },
@@ -56,18 +56,18 @@
   ],
   "localizations": {
     "zh-CN": {
-      "name": "图表看板",
-      "description": "面向查询结果的免配置 AI 图表看板，支持 Agent 通过 MCP 对话添加数据卡片。",
+      "name": "对话图表看板",
+      "description": "用对话直接生成图表的看板：Agent 通过 MCP 一句话把查询结果变成可保存的数据卡片。",
       "contributions": {
         "com.dnl.dbx-chart-board.workbench": {
-          "label": "图表看板",
-          "description": "把查询结果一键变成可保存的图表面板。"
+          "label": "对话图表看板",
+          "description": "对 Agent 说一句话，把查询结果变成可保存的图表面板。"
         },
         "com.dnl.dbx-chart-board.open": {
-          "label": "打开图表看板"
+          "label": "打开对话图表看板"
         },
         "com.dnl.dbx-chart-board.mcp": {
-          "label": "图表看板工具"
+          "label": "对话图表看板工具"
         }
       }
     }

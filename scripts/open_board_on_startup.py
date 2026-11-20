@@ -1,4 +1,4 @@
-"""本地调试：把图表看板工作台写进 DBX 的 open_tabs 并设为启动激活页签。
+"""本地调试：把对话图表看板工作台写进 DBX 的 open_tabs 并设为启动激活页签。
 
 仅修改 app_state.open_tabs（页签工作区），不改任何业务数据。需先关闭 DBX 再运行。
 """
@@ -31,7 +31,7 @@ def main() -> None:
     tab = {
         "id": tab_id,
         "createdAt": int(time.time() * 1000),
-        "title": "图表看板",
+        "title": "对话图表看板",
         "connectionId": CONNECTION_ID,
         "database": os.environ.get("DBX_DEMO_DATABASE", ""),
         "sql": "",
@@ -42,7 +42,7 @@ def main() -> None:
         "pluginWorkbench": {
             "pluginId": PLUGIN_ID,
             "contributionId": CONTRIBUTION,
-            "defaultTitle": "图表看板",
+            "defaultTitle": "对话图表看板",
             "context": {
                 "connectionId": CONNECTION_ID,
                 "database": os.environ.get("DBX_DEMO_DATABASE", ""),

@@ -1,4 +1,4 @@
-/* 图表看板 —— DBX 纯前端插件
+/* 对话图表看板 —— DBX 纯前端插件
  * 从连接右键打开：把只读 SQL 结果渲染为可保存的 ECharts 图表面板。
  * 权限：host.data:read（queryData 只读查询）+ host.storage（面板持久化）。
  */
@@ -437,7 +437,7 @@ let lastPersistedSnapshot = "";
   async function fetchCardData(card) {
     if (card.demo) return DEMO_RESULT;
     const cardConnectionId = card.connectionId || connectionId;
-    if (!cardConnectionId) throw new Error("卡片缺少连接：请从连接树右键 →「打开图表看板」");
+    if (!cardConnectionId) throw new Error("卡片缺少连接：请从连接树右键 →「打开对话图表看板」");
     if (!plugin.capabilities || !plugin.capabilities.dataApi) throw new Error("当前宿主不支持 host.data:read");
     return plugin.queryData({
       connectionId: cardConnectionId,
@@ -580,7 +580,7 @@ let lastPersistedSnapshot = "";
     // 连接横幅
     if (!connectionId) {
       els.banner.classList.remove("hidden");
-      els.banner.textContent = "当前未绑定连接：请从左侧连接树右键 →「打开图表看板」后再建数据卡片；示例卡片不受影响。";
+      els.banner.textContent = "当前未绑定连接：请从左侧连接树右键 →「打开对话图表看板」后再建数据卡片；示例卡片不受影响。";
     } else {
       els.banner.classList.add("hidden");
     }
@@ -720,7 +720,7 @@ let lastPersistedSnapshot = "";
       return;
     }
     if (!connectionId) {
-      els.dlgHint.textContent = "缺少连接：请从连接树右键 →「打开图表看板」。";
+      els.dlgHint.textContent = "缺少连接：请从连接树右键 →「打开对话图表看板」。";
       return;
     }
     els.btnQuery.disabled = true;

@@ -1,6 +1,6 @@
-# Release v0.2.0 — Chart Board
+# Release v0.1.0 — ChatBoard
 
-Chart Board turns SQL query results into a persistent, AI-agent-friendly dashboard inside DBX.
+ChatBoard turns SQL query results into a persistent, conversation-driven dashboard inside DBX: tell an agent what you want and it adds the chart card for you.
 
 ## Highlights
 
@@ -13,7 +13,7 @@ Chart Board turns SQL query results into a persistent, AI-agent-friendly dashboa
   shape, and call `add_card` — the card appears in an open workbench within ~2 seconds.
 - **Safety**: read-only `host.data:read` queries with per-connection consent; SQL shown on
   every card; row/point/category caps; cards persist via `host.storage` (no result data cached).
-- **Result-view entry**: right-click a connection → Open Chart Board.
+- **Result-view entry**: right-click a connection → Open ChatBoard.
 
 ## Candidate artifacts (unsigned, for store review)
 

@@ -1,11 +1,11 @@
-# Chart Board（DBX 插件）
+# ChatBoard（DBX 插件）
 
 把查询结果一键变成可保存的图表面板 —— 支持 **Agent 通过 MCP 对话自动添加数据卡片**。
 
 ## 功能
 
 ### 看板 UI
-- 入口：连接树右键 →「打开图表看板」（工作台 context 自动携带连接）
+- 入口：连接树右键 →「打开对话图表看板」（工作台 context 自动携带连接）
 - 卡片 = 只读 SQL + 图表规格：柱状 / 折线 / 面积 / 饼图 / 散点，支持堆叠与百分比堆叠
 - **智能推断**：按数据形状自动选型（日期维度→折线、文本维度→柱状、双维度→堆叠、双数值→散点）
 - 多面板切换；状态存插件自身 `host.storage`（只存 SQL+规格，不存数据）
@@ -56,7 +56,7 @@ node scripts/verify_mcp_tools.mjs call dbx_dbx_chart_board__list_boards '{}'
 
 1. 插件中心 → 设置 → 第三方与开发者选项 → 开启「允许安装未签名开发包」
 2. **在该页面**点「安装 .dbxp」（不要从资源管理器双击），选择：
-   `dist/com.dnl.dbx-chart-board-0.2.0-windows-x64.dbxp`
+   `dist/com.dnl.dbx-chart-board-0.1.0-windows-x64.dbxp`
 3. 首次查询会在 DBX 弹连接授权；插件工具在 设置 → MCP → Capabilities 中按插件授权
 
 ## 已知限制
