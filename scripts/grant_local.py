@@ -32,7 +32,7 @@ def main() -> None:
         "disabledTools": [],
     }
     data_dir = os.path.join(os.path.dirname(DB), "plugin-data", PLUGIN_ID)
-    import os
+
     os.makedirs(data_dir, exist_ok=True)
     if CONNECTION_ID:
         with open(os.path.join(data_dir, "chart-board-config.json"), "w", encoding="utf-8") as handle:

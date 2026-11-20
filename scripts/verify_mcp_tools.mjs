@@ -4,10 +4,17 @@
  *   node scripts/verify_mcp_tools.mjs call <工具名> '<json参数>'
  */
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
 
-const EXE =
-  process.env.DBX_MCP_EXE ||
-  "dbx-mcp";
+
+const CANDIDATES = [
+  process.env.DBX_MCP_EXE,
+  join(homedir(), "AppData", "Roaming", "nvm", "v22.22.3", "node_modules", "@dbx-app", "mcp-server", "node_modules", "@dbx-app", "mcp-win32-x64", "bin", "dbx-mcp.exe"),
+  join(homedir(), "AppData", "Roaming", "npm", "node_modules", "@dbx-app", "mcp-server", "node_modules", "@dbx-app", "mcp-win32-x64", "bin", "dbx-mcp.exe"),
+].filter(Boolean);
+const EXE = CANDIDATES.find((candidate) => existsSync(candidate)) || CANDIDATES[0];
 const child = spawn(EXE, [], { stdio: ["pipe", "pipe", "pipe"] });
 let buffer = "";
 let callSent = false;

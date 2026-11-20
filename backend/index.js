@@ -71,6 +71,63 @@ function uid() {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 }
 
+
+/**
+ * 从只读 SQL 自动推断图表规格（Agent 只需给 sql + title 即可出图）。
+ * 不连接数据库：用结果列名与聚合表达式做形状推断，与实际列元数据同口径。
+ */
+function inferSpecFromSql(sql) {
+  const match = /\bselect\s+([\s\S]*?)\s+\bfrom\s/i.exec(sql);
+  if (!match) throw new Error("无法从 SQL 解析 SELECT 列：请显式提供 spec");
+  const expression = match[1];
+  // 按顶层逗号分割（忽略聚合函数括号内的逗号）
+  const columns = [];
+  let depth = 0;
+  let current = "";
+  for (const character of expression) {
+    if (character === "(") depth += 1;
+    if (character === ")") depth -= 1;
+    if (character === "," && depth === 0) {
+      columns.push(current.trim());
+      current = "";
+    } else {
+      current += character;
+    }
+  }
+  if (current.trim()) columns.push(current.trim());
+
+  const isAggregate = (expressionText) => /^\s*(count|sum|avg|max|min)\s*\(/i.test(expressionText);
+  const nameOf = (expressionText) => {
+    const alias = /\b(?:as\s+)?[`"']?([A-Za-z_][\w]*)[`"']?\s*$/i.exec(expressionText);
+    if (alias && !isAggregate(expressionText)) return alias[1];
+    const parts = /\bas\s+[`"']?([^`"'\s]+)[`"']?\s*$/i.exec(expressionText);
+    return parts ? parts[1] : expressionText.trim();
+  };
+  const isDateLike = (name) => /(date|time|month|day|year|日期|时间|月份)/i.test(name);
+
+  const dimensions = [];
+  const metrics = [];
+  for (const item of columns) {
+    if (isAggregate(item)) metrics.push(item.trim()); // MySQL 结果列名就是表达式原文，如 count(1)
+    else dimensions.push(nameOf(item));
+  }
+  if (metrics.length === 0) {
+    // 无聚合：第一列当维度，第二列当指标（调用方可显式 spec 覆盖）
+    if (dimensions.length < 2) throw new Error("SQL 中没有可识别的指标列：请显式提供 spec");
+    return { type: "bar", dimension: [dimensions[0]], metrics: [dimensions[1]], breakdown: null, stack: "none" };
+  }
+  if (dimensions.length === 0) return { type: "bar", dimension: [], metrics: metrics.slice(0, 4), breakdown: null, stack: "none" };
+  if (dimensions.length >= 2) {
+    return { type: "bar", dimension: [dimensions[0]], breakdown: dimensions[1], metrics: [metrics[0]], stack: "stacked" };
+  }
+  return {
+    type: isDateLike(dimensions[0]) ? "line" : "bar",
+    dimension: [dimensions[0]],
+    metrics: metrics.slice(0, 4),
+    breakdown: null,
+    stack: "none",
+  };
+}
 function normalizeSpec(input) {
   if (!input || typeof input !== "object") throw new Error("spec 必须是对象");
   const type = String(input.type || "bar");
@@ -110,7 +167,7 @@ const TOOLS = [
         sql: { type: "string", description: "只读 SELECT 语句，卡片刷新时由 DBX 执行" },
         spec: {
           type: "object",
-          description: "图表规格：type/dimension[]/metrics[]/breakdown/stack（列名字符串，不用列序号）",
+          description: "可选图表规格：type/dimension[]/metrics[]/breakdown/stack。省略时从 SQL 的 SELECT 列与聚合函数自动推断（日期维度→line，其余→bar）。",
           properties: {
             type: { type: "string", enum: ["bar", "line", "area", "pie", "scatter"] },
             dimension: { type: "array", items: { type: "string" } },
@@ -121,7 +178,7 @@ const TOOLS = [
           required: ["type", "dimension", "metrics"],
         },
       },
-      required: ["title", "sql", "spec"],
+      required: ["title", "sql"],
     },
     annotations: { readOnlyHint: false },
   },
@@ -150,7 +207,7 @@ function callTool(tool, args = {}) {
     const sql = String(args.sql || "").trim();
     if (!title || !sql) throw new Error("title 和 sql 不能为空");
     if (!/^(select|with)\b/i.test(sql)) throw new Error("sql 必须是只读 SELECT/WITH 查询");
-    const spec = normalizeSpec(args.spec);
+    const spec = args.spec ? normalizeSpec(args.spec) : inferSpecFromSql(sql);
     if (spec.metrics.length === 0) throw new Error("spec.metrics 至少需要一个指标列");
     if (spec.type === "scatter" && spec.metrics.length < 2) throw new Error("散点图需要两个指标列");
     if (spec.type === "pie" && (spec.dimension.length !== 1 || spec.metrics.length !== 1)) {
