@@ -689,6 +689,10 @@
       els.dlgHint.textContent = "请先填写 SQL。";
       return;
     }
+    if (plugin.capabilities && plugin.capabilities.dataApi === false) {
+      els.dlgHint.textContent = "当前宿主不支持 host.data:read（capabilities.dataApi=false）。";
+      return;
+    }
     if (!connectionId) {
       els.dlgHint.textContent = "缺少连接：请从连接树右键 →「打开图表看板」。";
       return;
@@ -703,9 +707,10 @@
         maxRows: MAX_ROWS,
       });
       dialogState.previewData = data;
-      els.dlgHint.textContent =
-        `返回 ${data.rows.length} 行` + (data.elapsedMs ? `，耗时 ${data.elapsedMs}ms` : "") + (data.truncated ? "（已截断）" : "");
       populateSpecSection(data);
+      const previousHint = els.dlgHint.textContent.trim();
+      const summary = `返回 ${data.rows.length} 行` + (data.elapsedMs ? `，耗时 ${data.elapsedMs}ms` : "") + (data.truncated ? "（已截断）" : "");
+      els.dlgHint.textContent = previousHint ? `${summary}；${previousHint}` : summary;
     } catch (error) {
       els.dlgHint.textContent = error.message;
     } finally {
