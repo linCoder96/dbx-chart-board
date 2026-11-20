@@ -1,0 +1,10 @@
+{
+  "candidates": [
+    {
+      "target": "windows-x64",
+      "file": "com.dnl.dbx-chart-board-0.2.0-windows-x64.dbxp",
+      "sha256": "42a37386b84a843e3c2336d2f0a1ee0801f6ce414fe919ed21a97a81815b9486",
+      "size": 54817344
+    }
+  ]
+}
