@@ -7,7 +7,7 @@ import { spawn } from "node:child_process";
 
 const EXE =
   process.env.DBX_MCP_EXE ||
-  "C:/Users/dnl/AppData/Roaming/nvm/v22.22.3/node_modules/@dbx-app/mcp-server/node_modules/@dbx-app/mcp-win32-x64/bin/dbx-mcp.exe";
+  "dbx-mcp";
 const child = spawn(EXE, [], { stdio: ["pipe", "pipe", "pipe"] });
 let buffer = "";
 let callSent = false;

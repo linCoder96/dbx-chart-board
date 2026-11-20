@@ -4,15 +4,17 @@
 """
 
 import json
+import os
 import sqlite3
+from pathlib import Path
 import time
 import uuid
 from datetime import datetime, timezone
 
-DB = r"C:\Users\dnl\AppData\Roaming\com.dbx.app\dbx.db"
+DB = os.environ.get("DBX_HOME", str(Path.home() / "AppData" / "Roaming" / "com.dbx.app")) + "/dbx.db"
 PLUGIN_ID = "com.dnl.dbx-chart-board"
 CONTRIBUTION = f"{PLUGIN_ID}.workbench"
-CONNECTION_ID = "13f9603c-b029-4ce5-9fd1-cc535159cc78"
+CONNECTION_ID = os.environ.get("DBX_DEMO_CONNECTION_ID", "")
 
 
 def main() -> None:
@@ -31,7 +33,7 @@ def main() -> None:
         "createdAt": int(time.time() * 1000),
         "title": "图表看板",
         "connectionId": CONNECTION_ID,
-        "database": "pms_statistic_safe_uat",
+        "database": os.environ.get("DBX_DEMO_DATABASE", ""),
         "sql": "",
         "isExecuting": False,
         "isCancelling": False,
@@ -43,9 +45,9 @@ def main() -> None:
             "defaultTitle": "图表看板",
             "context": {
                 "connectionId": CONNECTION_ID,
-                "database": "pms_statistic_safe_uat",
+                "database": os.environ.get("DBX_DEMO_DATABASE", ""),
                 "dbType": "mysql",
-                "name": "192.168.0.211",
+                "name": os.environ.get("DBX_DEMO_CONNECTION_NAME", "Demo Connection"),
             },
         },
     }

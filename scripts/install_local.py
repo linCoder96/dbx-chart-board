@@ -4,6 +4,7 @@
 """
 
 import hashlib
+import os
 import json
 import shutil
 import zipfile
@@ -11,7 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 PLUGIN_ID = "com.dnl.dbx-chart-board"
-DBX_HOME = Path(r"C:\Users\dnl\AppData\Roaming\com.dbx.app")
+DBX_HOME = Path(os.environ.get("DBX_HOME", str(Path.home() / "AppData" / "Roaming" / "com.dbx.app")))
 ROOT = Path(__file__).resolve().parent.parent
 PACKAGE = ROOT / "dist" / "com.dnl.dbx-chart-board-0.2.0-windows-x64.dbxp"
 PLUGIN_HOME = DBX_HOME / "plugins" / PLUGIN_ID

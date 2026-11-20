@@ -4,12 +4,14 @@
 """
 
 import json
+import os
 import sqlite3
+from pathlib import Path
 from datetime import datetime, timezone
 
-DB = r"C:\Users\dnl\AppData\Roaming\com.dbx.app\dbx.db"
+DB = os.environ.get("DBX_HOME", str(Path.home() / "AppData" / "Roaming" / "com.dbx.app")) + "/dbx.db"
 PLUGIN_ID = "com.dnl.dbx-chart-board"
-CONNECTION_ID = "13f9603c-b029-4ce5-9fd1-cc535159cc78"  # MySQL_192.168.0.207（dev&test）
+CONNECTION_ID = os.environ.get("DBX_DEMO_CONNECTION_ID", "")  # 可选：要授权的示例连接 ID
 
 
 def main() -> None:
@@ -29,17 +31,19 @@ def main() -> None:
         },
         "disabledTools": [],
     }
-    data_dir = rf"C:\Users\dnl\AppData\Roaming\com.dbx.app\plugin-data\{PLUGIN_ID}"
+    data_dir = os.path.join(os.path.dirname(DB), "plugin-data", PLUGIN_ID)
     import os
     os.makedirs(data_dir, exist_ok=True)
-    with open(rf"{data_dir}\chart-board-config.json", "w", encoding="utf-8") as handle:
-        json.dump({"defaultConnectionId": CONNECTION_ID}, handle)
-    print("已写入 Agent 卡片默认连接配置")
+    if CONNECTION_ID:
+        with open(os.path.join(data_dir, "chart-board-config.json"), "w", encoding="utf-8") as handle:
+            json.dump({"defaultConnectionId": CONNECTION_ID}, handle)
+        print("已写入 Agent 卡片默认连接配置")
     grants = settings.setdefault("plugin_data_grants", {})
     allowed = grants.get(PLUGIN_ID) or []
-    if isinstance(allowed, list) and CONNECTION_ID not in allowed:
+    if isinstance(allowed, list) and CONNECTION_ID and CONNECTION_ID not in allowed:
         allowed.append(CONNECTION_ID)
-    grants[PLUGIN_ID] = allowed
+    if allowed:
+        grants[PLUGIN_ID] = allowed
     settings["plugin_mcp_grants_updated_at"] = datetime.now(timezone.utc).isoformat()
     conn.execute(
         "update app_settings set settings_json = ? where id = ?",
