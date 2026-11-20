@@ -1,0 +1,54 @@
+"""本地开发调试用：在 DBX app_settings 中为 Chart Board 写入 MCP 工具授权和数据访问授权。
+
+等价于在插件中心/MCP 设置里手工点开开关，仅用于自动化验证。
+"""
+
+import json
+import sqlite3
+from datetime import datetime, timezone
+
+DB = r"C:\Users\dnl\AppData\Roaming\com.dbx.app\dbx.db"
+PLUGIN_ID = "com.dnl.dbx-chart-board"
+CONNECTION_ID = "e550974a-c9a6-48e3-9dc7-8c0ff4ad2a04"  # MySQL_192.168.0.207（dev&test）
+
+
+def main() -> None:
+    conn = sqlite3.connect(DB, timeout=10)
+    row = conn.execute("select id, settings_json from app_settings limit 1").fetchone()
+    if not row:
+        raise SystemExit("app_settings 为空：请先启动一次 DBX")
+    settings_id, raw = row
+    settings = json.loads(raw)
+    settings.setdefault("plugin_mcp_grants", {})[PLUGIN_ID] = {
+        "external": True,
+        "ceiling": "write",
+        "approvedTools": {
+            "list_boards": "read",
+            "add_card": "write",
+            "remove_card": "write",
+        },
+        "disabledTools": [],
+    }
+    data_dir = rf"C:\Users\dnl\AppData\Roaming\com.dbx.app\plugin-data\{PLUGIN_ID}"
+    import os
+    os.makedirs(data_dir, exist_ok=True)
+    with open(rf"{data_dir}\chart-board-config.json", "w", encoding="utf-8") as handle:
+        json.dump({"defaultConnectionId": CONNECTION_ID}, handle)
+    print("已写入 Agent 卡片默认连接配置")
+    grants = settings.setdefault("plugin_data_grants", {})
+    allowed = grants.get(PLUGIN_ID) or []
+    if isinstance(allowed, list) and CONNECTION_ID not in allowed:
+        allowed.append(CONNECTION_ID)
+    grants[PLUGIN_ID] = allowed
+    settings["plugin_mcp_grants_updated_at"] = datetime.now(timezone.utc).isoformat()
+    conn.execute(
+        "update app_settings set settings_json = ? where id = ?",
+        (json.dumps(settings, ensure_ascii=False, separators=(",", ":")), settings_id),
+    )
+    conn.commit()
+    conn.close()
+    print(f"已为 {PLUGIN_ID} 写入 MCP write 授权 + 连接数据授权")
+
+
+if __name__ == "__main__":
+    main()

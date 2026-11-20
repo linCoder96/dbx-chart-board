@@ -40,6 +40,16 @@ function writeStore(store) {
   fs.renameSync(temp, STORAGE_FILE);
 }
 
+/** 本地调试配置：Agent 未指定连接时，卡片默认绑定到该连接（written by scripts/grant_local.py）。 */
+function defaultConnectionId() {
+  try {
+    const config = JSON.parse(fs.readFileSync(path.join(DATA_DIR, "chart-board-config.json"), "utf8"));
+    return typeof config.defaultConnectionId === "string" ? config.defaultConnectionId : "";
+  } catch {
+    return "";
+  }
+}
+
 function loadBoards(store) {
   const value = store[STORE_KEY];
   const boards = value && Array.isArray(value.boards) && value.boards.length
@@ -90,11 +100,10 @@ const TOOLS = [
   {
     name: "add_card",
     description:
-      "向 DBX 图表看板添加一张数据卡片。先通过 dbx_execute_query 查询数据，再按数据形状给出 spec：日期维度→line，文本维度→bar，两个数值列→scatter，占比→pie。connectionId 可由宿主自动注入（也可用 dbx_connection 选择连接）。",
+      "向 DBX 图表看板添加一张数据卡片。先通过 dbx_execute_query 查询数据，再按数据形状给出 spec：日期维度→line，文本维度→bar，两个数值列→scatter，占比→pie。卡片刷新时使用工作台当前连接。",
     inputSchema: {
       type: "object",
       properties: {
-        connectionId: { type: "string", description: "已打开的数据库连接 ID（宿主注入或 dbx_connection 选择）" },
         database: { type: "string", description: "可选：数据库名，留空用连接默认库" },
         boardId: { type: "string", description: "可选：目标面板 ID，默认当前激活面板" },
         title: { type: "string", description: "卡片标题" },
@@ -158,7 +167,7 @@ function callTool(tool, args = {}) {
       title,
       sql,
       database: typeof args.database === "string" ? args.database : "",
-      connectionId: typeof args.connectionId === "string" ? args.connectionId : "",
+      connectionId: (typeof args.connectionId === "string" ? args.connectionId : "") || defaultConnectionId(),
       spec,
       createdBy: "agent",
     };
